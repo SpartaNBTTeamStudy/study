@@ -23,7 +23,8 @@ type ButtonVariant = VariantProps<typeof buttonVariants>;
 
 type ChipProps = {
   text: string;
-} & ButtonVariant;
+} & ButtonVariant &
+  React.ComponentProps<"div">;
 
 const Chip = ({ intent, text, ...props }: ChipProps) => {
   return (
