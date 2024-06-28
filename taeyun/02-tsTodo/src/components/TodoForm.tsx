@@ -10,7 +10,7 @@ const TodoForm: React.FC<PropTypes> = ({ setTodos }) => {
   const [newTodoText, setNewTodoText] = useState<string>("");
 
   // 투두 추가
-  const handelAddTodo = (e) => {
+  const handelAddTodo = (e:React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newTodoText.trim() !== "") {
       const newTodo = TodoService.addTodos(newTodoText);
