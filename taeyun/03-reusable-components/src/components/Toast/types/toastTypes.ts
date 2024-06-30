@@ -7,7 +7,7 @@ export interface ToastType {
 
 export interface ToastContextType {
   toastList: Array<ToastType>;
-  setToastList: React.Dispatch<React.SetStateAction<Array<ToastType>>>;
+  setToastList: React.Dispatch<React.SetStateAction<ToastType[]>>;
 }
 
 export type ToastMapKey = "success" | "error" | "warning";

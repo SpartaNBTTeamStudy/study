@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ToastContext } from "../contexts/ToastContext";
-import { ToastType } from "@/components/Toast/types";
+import { ToastType } from "@/components/Toast/types/toastTypes";
 
 interface ToastProviderProps {
   children: React.ReactNode;

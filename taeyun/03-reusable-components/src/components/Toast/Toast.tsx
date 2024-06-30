@@ -1,7 +1,6 @@
 import { ToastContext } from "@/store/contexts/ToastContext";
 import React, { useContext, useEffect, useState } from "react";
 import { ToastType } from "./types/toastTypes";
-import { toastMap } from "./types/constants";
 import "./Toast.css";
 import ToastUi from "./ToastUi";
 
