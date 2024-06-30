@@ -1,4 +1,5 @@
 import { VariantProps, cva } from "class-variance-authority";
+import { ComponentProps } from "react";
 
 const buttonVariants = cva(
   "rounded-lg border-4 border-white inline-flex px-4 py-2 hover:opacity-50 transition-opacity cursor-pointer",
@@ -24,7 +25,7 @@ type ButtonVariant = VariantProps<typeof buttonVariants>;
 type ChipProps = {
   text: string;
 } & ButtonVariant &
-  React.ComponentProps<"div">;
+  ComponentProps<"div">;
 
 const Chip = ({ intent, text, ...props }: ChipProps) => {
   return (
