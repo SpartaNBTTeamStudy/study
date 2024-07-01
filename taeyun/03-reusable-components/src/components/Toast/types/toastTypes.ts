@@ -6,7 +6,7 @@ export interface ToastType {
 }
 
 export interface ToastContextType {
-  toastList: Array<ToastType>;
+  toastList: ToastType[];
   setToastList: React.Dispatch<React.SetStateAction<ToastType[]>>;
 }
 

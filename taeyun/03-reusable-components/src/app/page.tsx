@@ -18,7 +18,7 @@ export default function Home() {
       message: `${type} 메세지`,
     };
     setToastList([...toastList, newToast]);
-    console.log(`${type} 생성!`);
+    console.log(`${type} 토스트!`);
   };
   return (
     <div>
@@ -68,7 +68,6 @@ export default function Home() {
 
       <h2>ContextAPI 토스트</h2>
 
-      <Toast />
       <Button
         intent="primary"
         text="success 토스트"
@@ -87,6 +86,8 @@ export default function Home() {
         size="sm"
         onClick={() => createToast("warning")}
       />
+
+      <Toast />
     </div>
   );
 }
