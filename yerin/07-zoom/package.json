@@ -6,6 +6,17 @@
   "license": "MIT",
   "description": "",
   "devDependencies": {
+    "@babel/cli": "^7.24.7",
+    "@babel/core": "^7.24.7",
+    "@babel/node": "^7.24.7",
     "nodemon": "^3.1.4"
+  },
+  "scripts": {
+    "dev": "nodemon"
+  },
+  "dependencies": {
+    "@babel/preset-env": "^7.24.7",
+    "express": "^4.19.2",
+    "pug": "^3.0.3"
   }
 }
