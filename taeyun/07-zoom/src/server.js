@@ -25,7 +25,7 @@ instrument(wsServer, {
   auth: false,
   mode: "development",
 });
-
+/*
 function publicRooms() {
   const {
     sockets: {
@@ -78,6 +78,18 @@ wsServer.on("connection", (socket) => {
   });
 
   socket.on("nickname", (nickname) => (socket["nickname"] = nickname));
+});
+
+*/
+
+// ============== 비디오 파트 =========================
+
+wsServer.on("connection", (socket) => {
+  socket.on("join_room", (roomName, done) => {
+    socket.join(roomName);
+    done();
+    socket.to(roomName).emit("welcome2");
+  });
 });
 
 /*

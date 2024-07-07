@@ -1,5 +1,5 @@
 const socket = io();
-
+/*
 const welcome = document.getElementById("welcome");
 const form = welcome.querySelector("form");
 const room = document.getElementById("room");
@@ -85,65 +85,133 @@ socket.on("room_change", (rooms) => {
     roomList.append(li);
   });
 });
+*/
 
-// const messageList = document.querySelector("ul");
-// const nickForm = document.querySelector("#nick");
-// const messageForm = document.querySelector("#message");
-// // 서버로의 연결
-// const socket = new WebSocket(`ws://${window.location.host}`);
+// ============== 비디오 파트 =========================
+const myFace = document.getElementById("myFace");
+const muteBtn = document.getElementById("mute");
+const cameraBtn = document.getElementById("camera");
+const camerasSelect = document.getElementById("cameras");
 
-// const makeMessage = (type, payload) => {
-//   const msg = { type, payload };
-//   return JSON.stringify(msg);
-// };
+const call = document.getElementById("call");
 
-// const handleOpen = () => {
-//   console.log("Connected to Server ✅");
-// };
+call.hidden = true;
 
-// const handleMessage = (message) => {
-//   const li = document.createElement("li");
-//   li.innerText = message.data;
-//   messageList.append(li);
-//   // console.log("New message: ", await e.data.text);
-//   console.log("New message: ", message.data);
-// };
+let myStream;
+let muted = false;
+let cameraOff = false;
+let roomName2;
 
-// const handleClose = () => {
-//   console.log("Disconnected from Server ❌");
-// };
+// 내 카메라 정보 접근
+async function getCameras() {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cameras = devices.filter((device) => device.kind === "videoinput");
+    const currentCamera = myStream.getVideoTracks()[0]; // 현재 카메라 장치
+    cameras.forEach((camera) => {
+      const option = document.createElement("option");
+      option.value = camera.deviceId;
+      option.innerText = camera.label;
 
-// // 소켓이 연결될때 실행
-// socket.addEventListener("open", handleOpen);
+      if (currentCamera.label === camera.label) {
+        option.selected = true;
+      }
 
-// // 메세지를 받을 때 실행
-// socket.addEventListener("message", handleMessage);
+      camerasSelect.appendChild(option);
+    });
+  } catch (e) {
+    console.log(e);
+  }
+}
 
-// // 소켓 연결이 끊어질 때 실행
-// socket.addEventListener("close", handleClose);
+// 캠 화면 출력
+async function getMedia(deviceId) {
+  // deviceId가 없을 때
+  const initialConstrains = {
+    audio: true,
+    video: { facingMode: "user" },
+  };
 
-// // 메시지 보내기
-// function handleSubmit(e) {
-//   e.preventDefault();
-//   const input = messageForm.querySelector("input");
-//   socket.send(makeMessage("new_message", input.value));
-//   const li = document.createElement("li");
-//   li.innerText = `You: ${input.value}`;
-//   messageList.append(li);
-//   input.value = "";
-// }
+  // deviceId가 있을 때
+  const cameraConstraints = {
+    audio: true,
+    video: { deviceId: { exact: deviceId } },
+  };
 
-// // 닉네임 설정
-// function handleNickSubmit(event) {
-//   event.preventDefault();
-//   const input = nickForm.querySelector("input");
-//   socket.send(makeMessage("nickname", input.value));
-//   input.value = "";
-// }
+  try {
+    myStream = await navigator.mediaDevices.getUserMedia(
+      deviceId ? cameraConstraints : initialConstrains
+    );
+    // console.log(myStream);
+    myFace.srcObject = myStream;
 
-// messageForm.addEventListener("submit", handleSubmit);
-// nickForm.addEventListener("submit", handleNickSubmit);
-// // 브라우저가 서버에 메세지를 보낼 때
-// // setTimeout(() => {
-// //   socket.send("클라이언트에서 보내는 메세지다~~~!");
-// // }, 3000);
+    if (!deviceId) {
+      await getCameras();
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+getMedia();
+
+function handleMuteClick() {
+  myStream
+    .getAudioTracks()
+    .forEach((track) => (track.enabled = !track.enabled)); // 소리끄기 (track.enabled이 false면 꺼짐)
+
+  if (!muted) {
+    muteBtn.innerText = "소리켜기";
+    muted = true;
+  } else {
+    muteBtn.innerText = "소리끄기";
+    muted = false;
+  }
+}
+
+function handleCameraClick() {
+  myStream
+    .getVideoTracks()
+    .forEach((track) => (track.enabled = !track.enabled)); // 카메라끄기
+  // 카메라 꺼져있을때
+  if (cameraOff) {
+    cameraBtn.innerText = "카메라 끄기";
+    cameraOff = false;
+  } else {
+    cameraBtn.innerText = "카메라 켜기";
+    cameraOff = true;
+  }
+}
+
+async function handleCameraChange() {
+  await getMedia(camerasSelect.value);
+}
+
+muteBtn.addEventListener("click", handleMuteClick);
+cameraBtn.addEventListener("click", handleCameraClick);
+camerasSelect.addEventListener("input", handleCameraChange);
+
+// Welcome Form (join a room)
+const welcome2 = document.getElementById("welcome2");
+const welcome2Form = welcome2.querySelector("form");
+
+function startMedia() {
+  welcome2.hidden = true;
+  call.hidden = false;
+  getMedia(); // 카메라, 마이크, 등등 불러옴
+}
+
+function handleWelcomeSubmit(event) {
+  event.preventDefault();
+  const input = welcome2Form.querySelector("input");
+  socket.emit("join_room", input.value, startMedia);
+  roomName2 = input.value;
+  input.value = "";
+}
+
+welcome2Form.addEventListener("submit", handleWelcomeSubmit);
+
+// Socket Code
+
+socket.on("welcome2", () => {
+  console.log("someone joined");
+});
