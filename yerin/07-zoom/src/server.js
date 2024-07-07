@@ -21,7 +21,18 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 wss.on("connection", (socket) => {
-  console.log("@@", socket);
+  console.log("Connected to Browser 🍀");
+
+  socket.on("close", () => {
+    console.log("Disconnected from Browser ❌");
+  });
+
+  socket.on("message", (message) => {
+    console.log(message.toString());
+  });
+
+  // 소켓으로 데이터 보내기
+  socket.send("hello");
 });
 
 server.listen(3000, () => {
