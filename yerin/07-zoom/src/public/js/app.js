@@ -1,48 +1,59 @@
-const messageList = document.querySelector("ul");
-const messageForm = document.querySelector("#message");
-const nickForm = document.querySelector("#nick");
+const socket = io();
 
-// 서버에 데이터를 보내기 위한 규격을 만들어 리턴하는 함수
-// 백엔드에 보낼 때엔 string 규격밖에 되지 않음
-const makeMessage = (type, payload) => {
-  const msg = { type, payload };
-  return JSON.stringify(msg);
-};
+const welcome = document.getElementById("welcome");
+const form = welcome.querySelector("form");
+const room = document.getElementById("room");
 
-// 웹소켓 프로토콜을 사용해야하기 때문에  http:// 프로토콜을 사용하지 않는다
-const socket = new WebSocket(`ws://${window.location.host}`);
+room.hidden = true;
 
-socket.addEventListener("open", () => {
-  console.log("Connected to Server 🍀");
-});
+let roomName;
 
-socket.addEventListener("message", (event) => {
+function addMessage(message) {
+  const ul = room.querySelector("ul");
   const li = document.createElement("li");
-  li.innerText = event.data;
-  messageList.append(li);
+  li.innerText = message;
+  ul.appendChild(li);
+}
+
+function handleMessageSubmit(event) {
+  event.preventDefault();
+  const input = room.querySelector("#msg input");
+  const value = input.value;
+  socket.emit("new_message", input.value, roomName, () => {
+    addMessage(`You: ${value}`);
+  });
+  input.value = "";
+}
+
+function showRoom() {
+  welcome.hidden = true;
+  room.hidden = false;
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName}`;
+  const msgForm = room.querySelector("#msg");
+  msgForm.addEventListener("submit", handleMessageSubmit);
+}
+
+function handleRoomSubmit(event) {
+  event.preventDefault();
+  const input = form.querySelector("input");
+  socket.emit("enter_room", input.value, showRoom);
+  roomName = input.value;
+  input.value = "";
+}
+
+form.addEventListener("submit", handleRoomSubmit);
+
+socket.on("welcome", (user, newCount) => {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName} (${newCount})`;
+  addMessage(`${user} arrived!`);
 });
 
-socket.addEventListener("close", () => {
-  console.log("Disconnected from Server ❌");
+socket.on("bye", (left, newCount) => {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName} (${newCount})`;
+  addMessage(`${left} left ㅠㅠ`);
 });
 
-const handleSubmit = (event) => {
-  event.preventDefault();
-
-  const input = messageForm.querySelector("input");
-  socket.send(makeMessage("new_message", input.value));
-
-  input.value = "";
-};
-
-const handleNickSubmit = (event) => {
-  event.preventDefault();
-
-  const input = nickForm.querySelector("input");
-  socket.send(makeMessage("nickname", input.value));
-
-  input.value = "";
-};
-
-messageForm.addEventListener("submit", handleSubmit);
-nickForm.addEventListener("submit", handleNickSubmit);
+socket.on("new_message", addMessage);
