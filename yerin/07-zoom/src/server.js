@@ -20,7 +20,11 @@ app.get("/*", (req, res) => res.redirect("/"));
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+// 두개의 웹소켓이 동작할 때 배열로 전부 넣어준다.
+const sockets = [];
+
 wss.on("connection", (socket) => {
+  sockets.push(socket);
   console.log("Connected to Browser 🍀");
 
   socket.on("close", () => {
@@ -28,11 +32,8 @@ wss.on("connection", (socket) => {
   });
 
   socket.on("message", (message) => {
-    console.log(message.toString());
+    sockets.forEach((aSocket) => aSocket.send(message));
   });
-
-  // 소켓으로 데이터 보내기
-  socket.send("hello");
 });
 
 server.listen(3000, () => {
