@@ -25,14 +25,26 @@ const sockets = [];
 
 wss.on("connection", (socket) => {
   sockets.push(socket);
+  socket["nickname"] = "Anon"; // 소켓에 데이터 저장도 가능
   console.log("Connected to Browser 🍀");
 
   socket.on("close", () => {
     console.log("Disconnected from Browser ❌");
   });
 
-  socket.on("message", (message) => {
-    sockets.forEach((aSocket) => aSocket.send(message));
+  socket.on("message", (msg) => {
+    const message = JSON.parse(msg);
+
+    switch (message.type) {
+      case "new_message": // 메세지면 다시 프론트에 보내줌
+        sockets.forEach((aSocket) =>
+          aSocket.send(`${socket.nickname}: ${message.payload}`)
+        );
+        break;
+      case "nickname":
+        socket["nickname"] = message.payload; // 방금 받은 타입이 닉네임이면 소켓에 저장
+        break;
+    }
   });
 });
 
