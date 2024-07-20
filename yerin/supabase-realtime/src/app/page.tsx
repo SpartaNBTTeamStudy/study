@@ -7,6 +7,20 @@ export default function Home() {
   const ref = useRef<HTMLInputElement>(null);
   const [todos, setTodos] = useState<any[]>([]);
 
+  const onLogin = async () => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: "lyr2@kakao.com",
+      password: "1234567",
+    });
+
+    if (error) {
+      console.log(error);
+    }
+    if (data) {
+      console.log("@@", data);
+    }
+  };
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("@@");
@@ -36,18 +50,23 @@ export default function Home() {
       //     "old": {},
       //     "errors": null
       // }
+      console.log("@@", payload);
       console.log("전달 받았어요!", payload.new);
       setTodos((prev: any) => [...prev, payload.new]);
     };
 
-    supabase
-      .channel("todos")
+    const channel = supabase
+      .channel("room_01")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "todos" },
         handleInserts
       )
       .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -82,9 +101,18 @@ export default function Home() {
       </form>
       <ul>
         {todos.map((todo) => (
-          <li key={todo.id}>{todo.content}</li>
+          <li key={todo.id}>
+            {todo.content} {todo.user_id}
+          </li>
         ))}
       </ul>
+      <button
+        type="button"
+        className="bg-blue-500 p-2 text-white rounded-md w-1/2"
+        onClick={onLogin}
+      >
+        로그인
+      </button>
     </main>
   );
 }
