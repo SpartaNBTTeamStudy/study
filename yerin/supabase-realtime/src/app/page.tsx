@@ -1,10 +1,11 @@
 "use client";
 
 import { supabase } from "./utils/supabase/supabaseClient";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const ref = useRef<HTMLInputElement>(null);
+  const [todos, setTodos] = useState<any[]>([]);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -15,13 +16,12 @@ export default function Home() {
     if (error) {
       console.log(error);
     }
-    if (data) {
-      console.log(data);
+    if (ref.current) {
+      ref.current.value = "";
     }
   };
 
   useEffect(() => {
-    // Create a function to handle inserts
     const handleInserts = (payload) => {
       //   {
       //     "schema": "public",
@@ -36,7 +36,8 @@ export default function Home() {
       //     "old": {},
       //     "errors": null
       // }
-      console.log("전달 받았어요!", payload);
+      console.log("전달 받았어요!", payload.new);
+      setTodos((prev: any) => [...prev, payload.new]);
     };
 
     supabase
@@ -47,6 +48,20 @@ export default function Home() {
         handleInserts
       )
       .subscribe();
+  }, []);
+
+  useEffect(() => {
+    const d = async () => {
+      const { data, error } = await supabase.from("todos").select("*");
+      if (error) {
+        console.log(error);
+      }
+      if (data) {
+        console.log("@@", data);
+        setTodos(data);
+      }
+    };
+    d();
   }, []);
 
   return (
@@ -65,6 +80,11 @@ export default function Home() {
           Send
         </button>
       </form>
+      <ul>
+        {todos.map((todo) => (
+          <li key={todo.id}>{todo.content}</li>
+        ))}
+      </ul>
     </main>
   );
 }
